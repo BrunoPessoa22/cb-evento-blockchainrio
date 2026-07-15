@@ -7,8 +7,8 @@ export const EVENT = {
   dateLabel: "11 de agosto de 2026",
   weekdayLabel: "terça-feira",
   timeLabel: "18h30 – 21h00",
-  venue: "Rio Brasa Lagoa",
-  venueDetail: "Av. Borges de Medeiros, 829 — Lagoa, Rio de Janeiro",
+  venue: "Rio Brasa Jardim Oceânico",
+  venueDetail: "Av. Armando Lombardi, 583 — Jardim Oceânico, Rio de Janeiro",
   city: "Rio de Janeiro, RJ",
   // 18:30–21:00 BRT (UTC-3)
   startUtc: "20260811T213000Z",

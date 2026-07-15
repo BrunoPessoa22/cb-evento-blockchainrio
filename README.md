@@ -1,7 +1,7 @@
 # Evento — Introduzindo a Cultura Builder em seu negócio
 
 Landing page + inscrições do side event da Cultura Builder antes do Blockchain.Rio.
-11 de agosto de 2026 · Rio Brasa Lagoa, Rio de Janeiro.
+11 de agosto de 2026 · Rio Brasa Jardim Oceânico, Rio de Janeiro.
 
 **Produção:** https://evento.culturabuilder.com
 
