@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Introduzindo a Cultura Builder em seu negócio · 11 ago 2026</title>
+<meta name="robots" content="noindex" />
+<style>
+  @font-face{font-family:'Geist';src:url('fonts/Geist-Regular.woff2') format('woff2');font-weight:400}
+  @font-face{font-family:'Geist';src:url('fonts/Geist-Medium.woff2') format('woff2');font-weight:500}
+  @font-face{font-family:'Geist';src:url('fonts/Geist-SemiBold.woff2') format('woff2');font-weight:600}
+  @font-face{font-family:'Geist';src:url('fonts/Geist-Bold.woff2') format('woff2');font-weight:700}
+  @font-face{font-family:'Geist';src:url('fonts/Geist-Black.woff2') format('woff2');font-weight:800}
+  @font-face{font-family:'Geist Mono';src:url('fonts/GeistMono-Regular.woff2') format('woff2');font-weight:400}
+  @font-face{font-family:'Geist Mono';src:url('fonts/GeistMono-Medium.woff2') format('woff2');font-weight:500}
+
+  :root{
+    --ink:#050505;
+    --ink-up:#0E0E0E;
+    --ink-2:#181818;
+    --line:rgba(255,255,255,.10);
+    --line-strong:rgba(255,255,255,.22);
+    --paper:#FAFAFA;
+    --paper-soft:#C7C2BA;
+    --paper-mute:#8A857C;
+    --paper-faint:#5C594F;
+    --rust:#FF5A1F;
+    --rust-deep:#C73D0E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#000;color:var(--paper);font-family:'Geist',system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'Geist Mono',monospace}
+
+  .counter{position:fixed;bottom:20px;right:32px;z-index:55;font-family:'Geist Mono',monospace;font-size:11.5px;letter-spacing:.08em;color:var(--rust)}
+  .hint{position:fixed;bottom:20px;left:32px;z-index:55;font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.28)}
+
+  .deck{height:100vh;width:100vw;position:relative;background:var(--ink)}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;background:var(--ink);padding:52px 64px 44px}
+  .slide.active{display:flex}
+  .slide.rust{background:var(--rust);color:var(--ink)}
+
+  /* furniture */
+  .kick{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;flex-shrink:0}
+  .kick .k{font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--rust)}
+  .kick .r{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper-faint)}
+  .rust .kick{border-color:rgba(5,5,5,.25)}
+  .rust .kick .k,.rust .kick .r{color:var(--ink)}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;padding:26px 0 18px}
+  .foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:14px;flex-shrink:0;font-family:'Geist Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-faint)}
+  .rust .foot{border-color:rgba(5,5,5,.25);color:rgba(5,5,5,.55)}
+  .foot img{height:15px;opacity:.55}
+
+  h1{font-size:56px;font-weight:800;line-height:1.0;letter-spacing:-.035em;color:var(--paper)}
+  h1 .hi{color:var(--rust)}
+  .rust h1{color:var(--ink)}
+  .sub{font-size:18.5px;color:var(--paper-mute);max-width:62ch;line-height:1.55;margin-top:22px}
+  .sub strong{color:var(--paper);font-weight:600}
+  .rust .sub{color:rgba(5,5,5,.72)}
+  .rust .sub strong{color:var(--ink)}
+
+  /* ledger stats */
+  .ledger{display:grid;grid-template-columns:repeat(3,1fr);margin-top:40px;border-top:1px solid var(--line-strong)}
+  .ledger .cell{padding:26px 30px 6px 0;border-right:1px solid var(--line)}
+  .ledger .cell:last-child{border-right:0}
+  .ledger b{display:block;font-size:92px;font-weight:800;letter-spacing:-.045em;line-height:.95;color:var(--paper)}
+  .ledger b.orange{color:var(--rust)}
+  .ledger .lbl{display:block;margin-top:14px;font-size:14.5px;color:var(--paper-soft);line-height:1.45;max-width:30ch}
+  .ledger .src{display:block;margin-top:12px;font-family:'Geist Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper-faint)}
+
+  /* dossier rows */
+  .dossier{margin-top:34px;border-top:1px solid var(--line-strong)}
+  .drow{display:grid;grid-template-columns:64px 1fr 1.15fr;gap:24px;align-items:baseline;border-bottom:1px solid var(--line);padding:17px 0}
+  .drow .n{font-family:'Geist Mono',monospace;font-size:12px;color:var(--rust)}
+  .drow h3{font-size:19px;font-weight:650;letter-spacing:-.01em;color:var(--paper)}
+  .drow p{font-size:14px;color:var(--paper-mute);line-height:1.5}
+  .drow p b{color:var(--paper-soft);font-weight:600}
+
+  .note{margin-top:28px;border-left:2px solid var(--rust);padding-left:18px;font-size:15.5px;color:var(--paper-mute);line-height:1.55;max-width:92ch}
+  .note b{color:var(--paper);font-weight:650}
+
+  .srcline{margin-top:auto;padding-top:16px;font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--paper-faint)}
+
+  /* method rail */
+  .rail{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:36px}
+  .rail .step{background:var(--ink-up);padding:26px 26px 22px}
+  .rail .step .n{font-family:'Geist Mono',monospace;font-size:11.5px;color:var(--rust)}
+  .rail .step h3{font-size:24px;font-weight:700;color:var(--paper);margin-top:10px;letter-spacing:-.02em}
+  .rail .step .l{font-size:13.5px;font-weight:600;color:var(--rust);margin-top:4px}
+  .rail .step p{font-size:13.5px;color:var(--paper-mute);line-height:1.55;margin-top:11px}
+
+  /* perimeter motif */
+  .peri{position:relative;border:1px solid var(--rust);background:rgba(255,90,31,.045);padding:30px 24px 20px;box-shadow:0 0 0 1px rgba(255,90,31,.14)}
+  .peri::before,.peri::after{content:"";position:absolute;width:13px;height:13px;border:2px solid var(--rust)}
+  .peri::before{left:-2px;top:-2px;border-right:0;border-bottom:0}
+  .peri::after{right:-2px;bottom:-2px;border-left:0;border-top:0}
+  .peri-tag{position:absolute;top:-8px;left:16px;background:var(--ink);padding:0 9px;font-family:'Geist Mono',monospace;font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--rust)}
+  .peri-row{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:baseline;border-bottom:1px solid var(--line);padding:12px 2px}
+  .peri-row:last-of-type{border-bottom:0}
+  .peri-row span{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-faint)}
+  .peri-row strong{font-size:15px;font-weight:600;color:var(--paper)}
+  .peri-row strong.ok{color:var(--rust)}
+  .peri-areas{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;border-top:1px dashed var(--line-strong);padding-top:13px}
+  .peri-areas span{border:1px solid var(--line);padding:5px 11px;font-size:12px;color:var(--paper-soft)}
+  .outside{margin-top:18px}
+  .outside .lbl{display:block;font-family:'Geist Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper-faint)}
+  .outside .chips{display:flex;gap:7px;margin-top:8px}
+  .outside .chips span{border:1px dashed rgba(255,255,255,.2);padding:5px 12px;font-size:12px;color:rgba(255,255,255,.32);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.30)}
+  .simu{display:block;margin-top:13px;font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+
+  /* routing table */
+  .routes{margin-top:36px;border-top:1px solid var(--line-strong)}
+  .route{display:grid;grid-template-columns:1.1fr 44px 1fr;gap:18px;align-items:center;border-bottom:1px solid var(--line);padding:16px 0}
+  .route .task{font-size:16.5px;font-weight:600;color:var(--paper)}
+  .route .task small{display:block;font-size:12px;font-weight:400;color:var(--paper-faint);margin-top:3px}
+  .route .arr{font-family:'Geist Mono',monospace;color:var(--rust);font-size:14px;text-align:center}
+  .route .dest{font-family:'Geist Mono',monospace;font-size:12.5px;letter-spacing:.06em;color:var(--paper-soft)}
+  .route .dest.loc{color:var(--rust)}
+
+  /* two columns offer */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:36px}
+  .twocol .col{background:var(--ink-up);padding:30px 32px}
+  .twocol .col .t{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--rust)}
+  .twocol .col h3{font-size:27px;font-weight:750;letter-spacing:-.02em;color:var(--paper);margin-top:12px}
+  .twocol .col .d{font-size:14px;color:var(--paper-mute);margin-top:6px}
+  .twocol .col ul{list-style:none;margin-top:18px;display:grid;gap:9px}
+  .twocol .col li{font-size:13.5px;color:var(--paper-soft);line-height:1.45;padding-left:16px;position:relative}
+  .twocol .col li::before{content:"";position:absolute;left:0;top:8px;width:7px;height:2px;background:var(--rust)}
+
+  /* cover */
+  .cover{padding:0}
+  .cover .inner{position:absolute;inset:0;padding:56px 72px;display:flex;flex-direction:column}
+  .cover .top{display:flex;align-items:center;justify-content:space-between}
+  .cover .top img{height:34px}
+  .cover .top span{font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--paper-faint)}
+  .cover .mid{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .cover .eyebrow{display:inline-flex;align-items:center;gap:12px;font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--rust)}
+  .cover .eyebrow::before{content:"";width:28px;height:2px;background:currentColor}
+  .cover h1{font-size:88px;margin-top:26px;max-width:12ch}
+  .cover .sub{font-size:20px;max-width:58ch}
+  .cover .bot{display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper-faint)}
+
+  /* case slides */
+  .case-wrap{display:grid;grid-template-columns:1fr .82fr;gap:56px;align-items:center}
+  .bigline{font-size:30px;font-weight:600;line-height:1.3;letter-spacing:-.015em;color:var(--paper-soft);max-width:40ch}
+  .bigline b{color:var(--paper)}
+  .bigline .hi{color:var(--rust)}
+
+  .facts{border-top:1px solid var(--line-strong)}
+  .facts .f{display:grid;grid-template-columns:190px 1fr;gap:20px;border-bottom:1px solid var(--line);padding:14px 0;align-items:baseline}
+  .facts .f span{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper-faint)}
+  .facts .f p{font-size:14.5px;color:var(--paper-soft);line-height:1.5}
+  .facts .f p b{color:var(--paper)}
+
+  /* CTA */
+  .rust .qrbox{background:#fff;padding:22px;width:238px}
+  .rust .qrbox img{width:100%;display:block}
+  .cta-wrap{display:grid;grid-template-columns:1fr auto;gap:64px;align-items:center}
+  .cta-big{font-size:78px;font-weight:800;letter-spacing:-.04em;line-height:.98}
+  .cta-contact{margin-top:34px;font-size:19px;color:rgba(5,5,5,.8);line-height:1.7}
+  .cta-contact b{font-weight:700;color:var(--ink)}
+
+  /* sources */
+  .refs{margin-top:16px;columns:2;column-gap:48px;font-family:'Geist Mono',monospace;font-size:9px;line-height:1.6;color:var(--paper-mute)}
+  .refs div{break-inside:avoid;margin-bottom:8px}
+  .refs b{color:var(--paper-soft);font-weight:500}
+
+  @page{size:338mm 190mm;margin:0}
+  @media print{
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{overflow:visible;background:var(--ink)}
+    .counter,.hint{display:none}
+    .deck{height:auto;width:auto;background:none}
+    .slide{display:flex!important;position:relative;inset:auto;width:338mm;height:190mm;page-break-after:always;overflow:hidden}
+  }
+</style>
+</head>
+<body>
+<div class="hint">← → navegar</div>
+<div class="counter"><span id="cur">1</span> / <span id="tot">17</span></div>
+
+<div class="deck" id="deck">
+
+<!-- 1 · CAPA -->
+<section class="slide cover active">
+  <div class="inner">
+    <div class="top">
+      <img src="cultura-builder.svg" alt="Cultura Builder" />
+      <span>Side event · Pré Blockchain.Rio</span>
+    </div>
+    <div class="mid">
+      <span class="eyebrow">Jantar · 11 de agosto de 2026</span>
+      <h1>Introduzindo a <span class="hi">Cultura Builder</span> em seu negócio</h1>
+      <p class="sub">Como empresas brasileiras estão colocando IA em produção — com cultura, método e infraestrutura própria.</p>
+    </div>
+    <div class="bot">
+      <span>Rio Brasa Jardim Oceânico · Rio de Janeiro</span>
+      <span>evento.culturabuilder.com</span>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · O PARADOXO -->
+<section class="slide">
+  <div class="kick"><span class="k">01 · O paradoxo</span><span class="r">Cultura Builder × Blockchain.Rio</span></div>
+  <div class="body">
+    <h1>O problema não é<br />a tecnologia.</h1>
+    <div class="ledger">
+      <div class="cell">
+        <b class="orange">95%</b>
+        <span class="lbl">das organizações que investiram em GenAI estão com retorno zero — só 5% extraem milhões em valor</span>
+        <span class="src">Projeto NANDA · MIT · 2025</span>
+      </div>
+      <div class="cell">
+        <b>42%</b>
+        <span class="lbl">das empresas na América do Norte e Europa abandonaram a maior parte das iniciativas de IA</span>
+        <span class="src">S&amp;P Global · 2025</span>
+      </div>
+      <div class="cell">
+        <b>74%</b>
+        <span class="lbl">dos brasileiros que usam IA levam as próprias ferramentas para o trabalho — sem governança</span>
+        <span class="src">Microsoft / LinkedIn · 2024</span>
+      </div>
+    </div>
+    <div class="note"><b>A empresa trava no piloto — as pessoas não.</b> O MIT chama a diferença de <b>learning gap</b>: quem aprende a construir captura o valor; quem só compra ferramenta vira estatística dos 95%.</div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>02 / 17</span></div>
+</section>
+
+<!-- 3 · QUEM SOMOS -->
+<section class="slide">
+  <div class="kick"><span class="k">02 · Cultura Builder</span><span class="r">Quem somos</span></div>
+  <div class="body">
+    <h1>Formamos os times<br />que constroem com IA.</h1>
+    <div class="facts" style="margin-top:36px">
+      <div class="f"><span>Escala</span><p><b>8.000+ profissionais formados</b> — da comunidade aberta a times inteiros dentro de empresas.</p></div>
+      <div class="f"><span>Clientes</span><p>IBOPE · Klini Saúde · Hospital Casa · Monte Dourado · Eatopia — <b>diagnóstico, formação e automação</b>.</p></div>
+      <div class="f"><span>Fundadores</span><p>Ariel Alexandre · Bruno Pessoa · Caio Vicentino · Deco Montenegro — co-fundadores.</p></div>
+      <div class="f"><span>Na imprensa</span><p>Reportagem na Época Negócios (2025).</p></div>
+      <div class="f"><span>Princípio</span><p><b>Educação fazendo, não assistindo:</b> cada encontro termina com algo funcionando no dado da empresa.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>03 / 17</span></div>
+</section>
+
+<!-- 4 · TESE MICRO-SAAS -->
+<section class="slide">
+  <div class="kick"><span class="k">03 · A tese</span><span class="r">Micro-SaaS interno</span></div>
+  <div class="body">
+    <h1 style="font-size:46px">O próximo software da sua empresa não vem de fornecedor. <span class="hi">Vem do seu time.</span></h1>
+    <p class="sub" style="margin-top:16px;max-width:78ch">Chamamos de <strong>micro-SaaS interno</strong>: ferramentas sob medida, construídas pela própria área, para o próprio processo — em dias, não em ciclos de RFP.</p>
+    <div class="ledger">
+      <div class="cell">
+        <b>~75%</b>
+        <span class="lbl">do código novo do Google é gerado por IA — era 25% no fim de 2024</span>
+        <span class="src">Google · Cloud Next · abr 2026</span>
+      </div>
+      <div class="cell">
+        <b>25%</b>
+        <span class="lbl">das startups da turma YC W25 nasceram com ~95% do código escrito por IA</span>
+        <span class="src">Y Combinator · mar 2025</span>
+      </div>
+      <div class="cell">
+        <b class="orange">37%</b>
+        <span class="lbl">das grandes empresas brasileiras com IA já desenvolvem soluções dentro de casa — eram 24% um ano antes</span>
+        <span class="src">Cetic.br · TIC Empresas · jun 2026</span>
+      </div>
+    </div>
+    <div class="note">Quando o custo de construir software cai uma ordem de grandeza, <b>"comprar ou construir?" muda de resposta</b> — para dezenas de processos que nunca justificaram um SaaS de prateleira.</div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>04 / 17</span></div>
+</section>
+
+<!-- 5 · NÃO PRECISA SER DEV -->
+<section class="slide">
+  <div class="kick"><span class="k">04 · A tese</span><span class="r">Quem constrói</span></div>
+  <div class="body">
+    <h1>Você não precisa de um exército de desenvolvedores.</h1>
+    <div class="dossier">
+      <div class="drow">
+        <span class="n">01</span>
+        <h3>A linguagem de programação agora é o português</h3>
+        <p>"Vibe coding" — descrever o que se quer e deixar a IA escrever o código — foi cunhado por Andrej Karpathy (OpenAI/Tesla) e eleito <b>palavra do ano de 2025 pelo dicionário Collins</b>. Na Replit, <b>75% dos clientes nunca escrevem uma linha de código</b>.</p>
+      </div>
+      <div class="drow">
+        <span class="n">02</span>
+        <h3>Contratar não escala — formar, sim</h3>
+        <p><b>98% das médias e grandes empresas brasileiras</b> têm dificuldade para contratar os profissionais de tecnologia que procuram (Ford/Datafolha, 2026). Quem já conhece a operação vira operador de IA.</p>
+      </div>
+      <div class="drow">
+        <span class="n">03</span>
+        <h3>Gestor, analista, advogado, enfermeiro</h3>
+        <p>Nos nossos programas, <b>quem constrói é a própria área</b> — com método, acompanhamento e governança. Não é promessa: é o formato de cada encontro.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>05 / 17</span></div>
+</section>
+
+<!-- 6 · KLINI -->
+<section class="slide">
+  <div class="kick"><span class="k">05 · Na prática</span><span class="r">Caso · Klini Saúde</span></div>
+  <div class="body">
+    <h1>Hoje vocês ouvem isso<br />de quem <span class="hi">fez</span>.</h1>
+    <p class="sub"><strong>Klini Saúde</strong> — uma operadora de saúde onde a própria operação constrói suas micro-soluções internas, área por área, a partir de um diagnóstico estruturado.</p>
+    <div class="facts" style="margin-top:34px;max-width:860px">
+      <div class="f"><span>Setor</span><p>Operadora de saúde — dado sensível por definição.</p></div>
+      <div class="f"><span>Formato</span><p>Diagnóstico área por área → trilha própria → <b>a operação constrói</b>.</p></div>
+      <div class="f"><span>Hoje à noite</span><p><b>O time da Klini conta a história</b> — do mapa de dores às ferramentas internas construídas por quem vive o processo.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>06 / 17</span></div>
+</section>
+
+<!-- 7 · IBOPE -->
+<section class="slide">
+  <div class="kick"><span class="k">06 · Na prática</span><span class="r">Caso · IBOPE</span></div>
+  <div class="body">
+    <div class="case-wrap">
+      <div>
+        <h1>Cultura antes<br />de ferramenta.</h1>
+        <p class="sub">O IBOPE opera um programa <strong>AI-First</strong> com a Cultura Builder: encontros contínuos em que executivos aprendem IA <strong>usando</strong> IA — com automação de assistência executiva já em uso no dia a dia.</p>
+      </div>
+      <div>
+        <div class="facts">
+          <div class="f"><span>Programa</span><p><b>AI-First em operação</b> — educação fazendo, no ritmo da liderança.</p></div>
+          <div class="f"><span>Ativo</span><p><b>26 anos de dados proprietários</b> de medição de audiência no roadmap para virar produto de IA.</p></div>
+          <div class="f"><span>Tese da casa</span><p>"O moat não é o modelo — <b>é o dado</b>."</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>07 / 17</span></div>
+</section>
+
+<!-- 8 · BUILDERS CLUB -->
+<section class="slide">
+  <div class="kick"><span class="k">07 · Como se instala cultura</span><span class="r">Builders Club</span></div>
+  <div class="body">
+    <h1><span class="hi">Builders Club:</span> ritmo quinzenal, do zero ao primeiro projeto em produção.</h1>
+    <div class="rail">
+      <div class="step">
+        <span class="n">01</span>
+        <h3>Diagnosticar</h3>
+        <div class="l">O mapa antes da obra</div>
+        <p>Maturidade e dores área por área, com os gestores. Saída: quick wins priorizados e um roadmap de 90 dias.</p>
+      </div>
+      <div class="step">
+        <span class="n">02</span>
+        <h3>Personalizar</h3>
+        <div class="l">Trilha da sua empresa</div>
+        <p>Não é curso de prateleira: a trilha nasce do diagnóstico, aplicada à função de cada pessoa.</p>
+      </div>
+      <div class="step">
+        <span class="n">03</span>
+        <h3>Escalar</h3>
+        <div class="l">Encontros quinzenais ao vivo</div>
+        <p>8 módulos por ciclo, sempre com as ferramentas do momento. Cada encontro termina com algo funcionando no dado da empresa. Metas de adoção medidas em 30/60/90 dias.</p>
+      </div>
+    </div>
+    <div class="note"><b>Curso solto informa. Ritmo com metas transforma.</b> Não é achismo: os CEOs que mais capturam valor alocam <b>~60% do orçamento de IA em capacitação do time</b> (BCG AI Radar, 2026) — e fatores organizacionais como cultura e apoio do gestor explicam <b>2× mais impacto de IA</b> do que fatores individuais (Microsoft Work Trend Index, 2026).</div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>08 / 17</span></div>
+</section>
+
+<!-- 9 · ONDE RODA -->
+<section class="slide">
+  <div class="kick"><span class="k">08 · A pergunta seguinte</span><span class="r">Dados · Custo · Dependência</span></div>
+  <div class="body">
+    <h1>Instalada a cultura, vem a pergunta: <span class="hi">onde essa IA roda?</span></h1>
+    <div class="dossier">
+      <div class="drow">
+        <span class="n">01</span>
+        <h3>Seus dados já estão vazando</h3>
+        <p><b>223 incidentes por mês, por empresa</b>, de violação de política de dados em apps de GenAI; no Brasil, <b>64% envolvem dados regulados</b> (Netskope, 2026).</p>
+      </div>
+      <div class="drow">
+        <span class="n">02</span>
+        <h3>O taxímetro corre em dólar</h3>
+        <p>API de fronteira cobra <b>por token, em dólar</b> — o custo cresce exatamente quando a IA começa a funcionar.</p>
+      </div>
+      <div class="drow">
+        <span class="n">03</span>
+        <h3>O modelo homologado hoje pode ser aposentado amanhã</h3>
+        <p>A OpenAI aposentou o GPT-4o do ChatGPT com <b>~3 meses de aviso</b>. Prompts calibrados quebram no roadmap de outra empresa.</p>
+      </div>
+      <div class="drow">
+        <span class="n">04</span>
+        <h3>O regulador acordou</h3>
+        <p>A ANPD pôs <b>IA entre os quatro eixos prioritários de fiscalização 2026–27</b> — e enviar dado pessoal para provedor no exterior é transferência internacional sob a LGPD.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>09 / 17</span></div>
+</section>
+
+<!-- 10 · A VIRADA OPEN -->
+<section class="slide">
+  <div class="kick"><span class="k">09 · A virada</span><span class="r">Modelos abertos</span></div>
+  <div class="body">
+    <h1>Os modelos abertos chegaram <span class="hi">a meses</span> da fronteira.</h1>
+    <div class="ledger">
+      <div class="cell">
+        <b class="orange" style="font-size:64px;padding-top:14px;display:block">4–8 meses</b>
+        <span class="lbl">é a distância dos melhores modelos abertos para a fronteira fechada</span>
+        <span class="src">Epoch AI · NIST/CAISI · 2026</span>
+      </div>
+      <div class="cell">
+        <b style="font-size:64px;padding-top:14px;display:block">280×</b>
+        <span class="lbl">de queda no custo de inferência no nível GPT-3.5: de US$ 20 para US$ 0,07 por milhão de tokens</span>
+        <span class="src">Stanford HAI · AI Index 2025</span>
+      </div>
+      <div class="cell">
+        <b style="font-size:64px;padding-top:14px;display:block">3,4%</b>
+        <span class="lbl">separa o melhor modelo aberto (GLM-5) do melhor fechado no ranking global</span>
+        <span class="src">Stanford HAI · AI Index 2026</span>
+      </div>
+    </div>
+    <div class="note"><b>Até a OpenAI publicou modelos de pesos abertos</b> (gpt-oss, ago/2025 — roda em uma única GPU). E em tarefas reais de trabalho, o líder aberto já <b>empata com a fronteira fechada</b> no GDPval (Artificial Analysis, 2026). A diferença restante aparece nos benchmarks mais difíceis — e é operacionalmente irrelevante na maioria das tarefas corporativas.</div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>10 / 17</span></div>
+</section>
+
+<!-- 11 · TESE 95% -->
+<section class="slide">
+  <div class="kick"><span class="k">10 · Nossa tese</span><span class="r">Os dois 95%</span></div>
+  <div class="body">
+    <h1><span class="hi">95%</span> do trabalho de IA da sua empresa roda em modelo aberto, dentro de casa.</h1>
+    <div class="dossier">
+      <div class="drow">
+        <span class="n">01</span>
+        <h3>A maioria das tarefas não precisa de fronteira</h3>
+        <p>Pesquisadores da NVIDIA estimam que <b>40–70% das chamadas de agentes de IA</b> podem rodar em modelos pequenos e especializados — mais baratos e mais rápidos (arXiv, 2025).</p>
+      </div>
+      <div class="drow">
+        <span class="n">02</span>
+        <h3>Quem fez a conta, migrou</h3>
+        <p>A Shopify trocou um modelo de fronteira por um <b>Qwen3-32B ajustado no próprio dado: 2,2× mais rápido, 68% mais barato — e com resultado superior</b>, em infraestrutura própria.</p>
+      </div>
+      <div class="drow">
+        <span class="n">03</span>
+        <h3>Quem tem dado sensível já roda dentro de casa</h3>
+        <p><b>Sicoob</b> (GenAI privada sobre Llama e Mistral) · <b>Serpro</b> (Nuvem Soberana) · <b>Forças Armadas da França</b> (Mistral soberano).</p>
+      </div>
+    </div>
+    <div class="note"><b>Sem taxímetro por token. Sem dado passando por provedor de modelo. Seu dado continua sendo seu ativo</b> — não insumo do roadmap de terceiros. Os ~5% restantes — dado público, capacidade máxima — vão para a fronteira via API, com critério.</div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>11 / 17</span></div>
+</section>
+
+<!-- 12 · IA SOBERANA -->
+<section class="slide">
+  <div class="kick"><span class="k">11 · O pacote</span><span class="r">AI Sovereignty</span></div>
+  <div class="body">
+    <div class="case-wrap">
+      <div>
+        <h1>IA soberana:<br />o modelo roda na <span class="hi">sua</span> infraestrutura.</h1>
+        <p class="sub">Modelos open-weight de nível de fronteira em <strong>infraestrutura privada e dedicada</strong>, integrados aos seus sistemas, com residência de dados definida em contrato — Brasil ou on-premise quando o setor exigir. Custo fixo em reais, pela capacidade contratada. <strong>E o time formado pelo Builders Club para operar.</strong></p>
+        <p class="sub" style="font-size:15px;margin-top:18px"><strong>85% dos líderes brasileiros</strong> dizem que precisam considerar soberania de IA nas estratégias de 2026 — IBM, fev/2026.</p>
+      </div>
+      <div>
+        <div class="peri">
+          <span class="peri-tag">Perímetro da sua empresa</span>
+          <div class="peri-row"><span>modelo</span><strong>open-weight · GPU dedicada</strong></div>
+          <div class="peri-row"><span>custo</span><strong>fixo em reais · R$ 0,00 por token</strong></div>
+          <div class="peri-row"><span>para provedores de modelo</span><strong class="ok">0 bytes · neste fluxo</strong></div>
+          <div class="peri-areas"><span>Comercial</span><span>Jurídico</span><span>Operações</span><span>RH</span></div>
+        </div>
+        <div class="outside">
+          <span class="lbl">fora do perímetro</span>
+          <div class="chips"><span>OpenAI</span><span>Anthropic</span><span>Google</span></div>
+          <span class="simu">Simulação ilustrativa</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>12 / 17</span></div>
+</section>
+
+<!-- 13 · ORQUESTRADOR -->
+<section class="slide">
+  <div class="kick"><span class="k">12 · Para onde vamos</span><span class="r">Visão de produto · em desenvolvimento</span></div>
+  <div class="body">
+    <h1>Um orquestrador que escolhe o melhor modelo para cada tarefa.</h1>
+    <div class="routes">
+      <div class="route">
+        <div class="task">Análise de contratos <small>dado sensível · PII</small></div>
+        <div class="arr">&#8594;</div>
+        <div class="dest loc">modelo aberto · sua GPU</div>
+      </div>
+      <div class="route">
+        <div class="task">Atendimento e operações internas <small>volume alto · o dia inteiro</small></div>
+        <div class="arr">&#8594;</div>
+        <div class="dest loc">modelo aberto · sua GPU</div>
+      </div>
+      <div class="route">
+        <div class="task">Pesquisa profunda em dado público <small>capacidade máxima</small></div>
+        <div class="arr">&#8594;</div>
+        <div class="dest">fronteira · API · com governança</div>
+      </div>
+    </div>
+    <div class="note"><b>Local por padrão. Fronteira por exceção</b> — com custo, critério e governança definidos por rota. Os ~95% ficam em casa; os ~5% escalam quando o caso exige.</div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>13 / 17</span></div>
+</section>
+
+<!-- 14 · POR QUE AGORA -->
+<section class="slide">
+  <div class="kick"><span class="k">13 · A janela</span><span class="r">Por que agora</span></div>
+  <div class="body">
+    <h1>Quem instala a cultura agora <span class="hi">compõe vantagem</span> sobre quem espera.</h1>
+    <div class="dossier">
+      <div class="drow">
+        <span class="n">01</span>
+        <h3>Os modelos abertos alcançaram</h3>
+        <p>A <b>4–8 meses da fronteira</b> (Epoch AI · NIST/CAISI, 2026) — e o custo de inferência segue despencando ano após ano.</p>
+      </div>
+      <div class="drow">
+        <span class="n">02</span>
+        <h3>O regulador acelerou</h3>
+        <p>ANPD fiscalizando IA como eixo prioritário; <b>PL 2338 (marco legal da IA) em tramitação</b> na Câmara — quem tem governança pronta sai na frente.</p>
+      </div>
+      <div class="drow">
+        <span class="n">03</span>
+        <h3>O Brasil colocou dinheiro na mesa</h3>
+        <p><b>Plano Brasileiro de IA: R$ 23 bilhões</b> até 2028 — infraestrutura, capacitação e demanda pública puxando o mercado.</p>
+      </div>
+      <div class="drow">
+        <span class="n">04</span>
+        <h3>Cultura é o ativo que compõe</h3>
+        <p>Ferramenta se compra em um trimestre. <b>Um time que constrói se forma em ciclos</b> — e cada ciclo aumenta a distância para quem ainda não começou.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>14 / 17</span></div>
+</section>
+
+<!-- 15 · DOIS CAMINHOS -->
+<section class="slide">
+  <div class="kick"><span class="k">14 · Por onde começar</span><span class="r">Dois caminhos, um método</span></div>
+  <div class="body">
+    <h1>Dois caminhos. <span class="hi">Um diagnóstico.</span></h1>
+    <div class="twocol">
+      <div class="col">
+        <span class="t">Cultura</span>
+        <h3>Builders Club</h3>
+        <div class="d">O time inteiro construindo, em ritmo quinzenal.</div>
+        <ul>
+          <li>Trilha personalizada a partir do diagnóstico</li>
+          <li>Encontros quinzenais ao vivo · 8 módulos por ciclo</li>
+          <li>Do primeiro prompt ao primeiro projeto em produção</li>
+          <li>Metas de adoção medidas em 30/60/90 dias</li>
+        </ul>
+      </div>
+      <div class="col">
+        <span class="t">Infraestrutura</span>
+        <h3>IA Soberana</h3>
+        <div class="d">Modelos abertos de fronteira, rodando em casa.</div>
+        <ul>
+          <li>Open-weight em infraestrutura privada e dedicada</li>
+          <li>Custo fixo em reais · sem cobrança por token</li>
+          <li>Residência de dados definida em contrato · LGPD por arquitetura</li>
+          <li>Formação Builders Club incluída — quem opera é o seu time</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note"><b>Os dois começam no mesmo lugar: um diagnóstico da sua operação.</b> É ele que diz o que construir primeiro — e onde deve rodar.</div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>15 / 17</span></div>
+</section>
+
+<!-- 16 · CTA -->
+<section class="slide rust">
+  <div class="kick"><span class="k">15 · Agora</span><span class="r">Cultura Builder</span></div>
+  <div class="body">
+    <div class="cta-wrap">
+      <div>
+        <div class="cta-big">Comece hoje.<br />Na mesa.</div>
+        <div class="cta-contact">
+          Fale com o <b>Bruno</b> ou com o <b>Deco</b> antes da sobremesa —<br />
+          ou aponte a câmera e chame no WhatsApp:<br />
+          <b>+55 21 96919-2210</b> · culturabuilder.com
+        </div>
+      </div>
+      <div class="qrbox"><img src="qr-wa.svg" alt="QR WhatsApp" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio</span><span>16 / 17</span></div>
+</section>
+
+<!-- 17 · FONTES -->
+<section class="slide">
+  <div class="kick"><span class="k">Fontes</span><span class="r">Estudos citados</span></div>
+  <div class="body" style="justify-content:flex-start">
+    <div class="refs">
+      <div><b>MIT · Projeto NANDA (jul 2025)</b> — The GenAI Divide: State of AI in Business. 95% das organizações com retorno zero em GenAI; 5% extraem milhões; "learning gap".</div>
+      <div><b>S&amp;P Global (2025)</b> — 42% das empresas (América do Norte e Europa) abandonaram a maior parte das iniciativas de IA.</div>
+      <div><b>Microsoft / LinkedIn · Work Trend Index (mai 2024)</b> — 74% dos brasileiros que usam IA levam as próprias ferramentas ao trabalho.</div>
+      <div><b>Microsoft · Work Trend Index (mai 2026)</b> — fatores organizacionais explicam 2× mais impacto de IA que fatores individuais (67% vs 32%).</div>
+      <div><b>BCG · AI Radar (jan 2026)</b> — CEOs "trailblazers" alocam ~60% do orçamento de IA em capacitação do time (vs ~25% dos demais).</div>
+      <div><b>Netskope · Cloud and Threat Report (2026)</b> — 223 incidentes/mês por empresa de violação de política de dados com GenAI; 64% no Brasil envolvem dados regulados.</div>
+      <div><b>Google · Cloud Next (abr 2026)</b> — ~75% do código novo gerado por IA com aprovação de engenheiros; era 25% em out/2024 (Alphabet earnings).</div>
+      <div><b>Y Combinator (mar 2025)</b> — Garry Tan: 25% das startups W25 com ~95% do código escrito por IA.</div>
+      <div><b>Replit (fev 2025)</b> — Amjad Masad (CEO): 75% dos clientes nunca escrevem uma linha de código.</div>
+      <div><b>Cetic.br / CGI.br · TIC Empresas 2025 (jun 2026)</b> — 37% das grandes empresas brasileiras com IA desenvolvem soluções internamente (24% em 2024).</div>
+      <div><b>IBM Institute for Business Value (fev 2026)</b> — 85% dos líderes brasileiros consideram soberania de IA nas estratégias de 2026.</div>
+      <div><b>Ford / Datafolha (2026)</b> — 98% das médias e grandes empresas brasileiras com dificuldade para contratar profissionais de tecnologia.</div>
+      <div><b>NIST / CAISI (mai 2026)</b> — avaliação DeepSeek V4 Pro: ~8 meses atrás da fronteira fechada, em 9 benchmarks.</div>
+      <div><b>Epoch AI (mai 2026)</b> — desde jan/2026, os melhores modelos abertos ficam em média ~4 meses atrás da fronteira fechada.</div>
+      <div><b>Stanford HAI · AI Index 2025 (abr 2025)</b> — custo de inferência nível GPT-3.5: US$ 20,00 → US$ 0,07 por milhão de tokens (~280×).</div>
+      <div><b>Stanford HAI · AI Index 2026 (mar 2026)</b> — melhor aberto (GLM-5) a 3,4% do melhor fechado no Arena; soberania de IA vira capítulo próprio do relatório.</div>
+      <div><b>Artificial Analysis (2026)</b> — GDPval: líder open-weight efetivamente empatado com GPT-5.5 em tarefas reais de trabalho.</div>
+      <div><b>NVIDIA Research (arXiv 2506.02153, 2025)</b> — Small Language Models are the Future of Agentic AI: 40–70% das chamadas de agentes podem rodar em modelos pequenos (MetaGPT 60%, Open Operator 40%, Cradle 70%).</div>
+      <div><b>Shopify Engineering (2026)</b> — Qwen3-32B com fine-tuning próprio: 2,2× mais rápido, 68% mais barato e resultado superior ao modelo de fronteira substituído.</div>
+      <div><b>Collins Dictionary (2025)</b> — "vibe coding" eleita palavra do ano.</div>
+      <div><b>ANPD / gov.br</b> — IA entre os quatro eixos prioritários de fiscalização 2026–27; Res. CD/ANPD 19/2024 (transferência internacional).</div>
+      <div><b>Governo Federal</b> — Plano Brasileiro de IA (PBIA): R$ 23 bilhões, 2024–2028.</div>
+      <div><b>OpenAI (2025–26)</b> — gpt-oss (pesos abertos, ago/2025); aposentadoria do GPT-4o no ChatGPT (fev/2026).</div>
+    </div>
+  </div>
+  <div class="foot"><span>Introduzindo a Cultura Builder em seu negócio · 11 ago 2026</span><span>17 / 17</span></div>
+</section>
+
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  document.getElementById('tot').textContent=slides.length;
+  let i=0;
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,j)=>s.classList.toggle('active',j===i));
+    document.getElementById('cur').textContent=i+1;
+  }
+  addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown')go(i+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')go(i-1);
+  });
+  addEventListener('click',e=>{ if(e.clientX>innerWidth/2)go(i+1); else go(i-1); });
+</script>
+</body>
+</html>
