@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { ArrowDown, Calendar, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EVENT } from "@/lib/event";
+import { EVENT, REGISTRATIONS_CLOSED } from "@/lib/event";
 
 export function Hero() {
   return (
@@ -35,12 +35,12 @@ export function Hero() {
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Button asChild size="lg" className="group">
                 <a href="#inscricao">
-                  Garantir meu lugar
+                  {REGISTRATIONS_CLOSED ? "Inscrições encerradas" : "Garantir meu lugar"}
                   <ArrowDown className="cta-arrow" aria-hidden />
                 </a>
               </Button>
               <span className="mono text-xs uppercase tracking-[0.18em] text-[var(--paper-faint)]">
-                Gratuito · vagas limitadas
+                {REGISTRATIONS_CLOSED ? "Lista fechada" : "Gratuito · vagas limitadas"}
               </span>
             </div>
           </div>
