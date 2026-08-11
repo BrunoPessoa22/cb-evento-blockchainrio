@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, LoaderCircle } from "lucide-react";
+import { Check, Lock, LoaderCircle } from "lucide-react";
 import { registrationSchema, type RegistrationInput } from "@/lib/validation";
+import { REGISTRATIONS_CLOSED } from "@/lib/event";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,21 @@ export function SignupForm() {
     } catch {
       setStatus("error");
     }
+  }
+
+  if (REGISTRATIONS_CLOSED) {
+    return (
+      <div className="border border-[var(--rule-strong)] bg-[var(--ink-up)] p-8 text-center">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center bg-[var(--rust)]">
+          <Lock className="h-6 w-6 text-white" aria-hidden />
+        </span>
+        <h3 className="mt-6 text-xl font-bold">Inscrições encerradas</h3>
+        <p className="mt-3 text-sm leading-relaxed text-[var(--paper-mute)]">
+          A lista para este jantar está fechada. Se você já se inscreveu, seu lugar
+          está garantido — nos vemos lá.
+        </p>
+      </div>
+    );
   }
 
   if (status === "success" || status === "already") {

@@ -15,3 +15,6 @@ export const EVENT = {
   endUtc: "20260812T000000Z",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://evento.culturabuilder.com",
 } as const;
+
+// Inscrições encerradas — flip para false se precisar reabrir.
+export const REGISTRATIONS_CLOSED: boolean = true;

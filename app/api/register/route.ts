@@ -3,10 +3,18 @@ import { getDb } from "@/lib/db";
 import { registrationSchema } from "@/lib/validation";
 import { sendConfirmation } from "@/lib/resend";
 import { clientIp, isRateLimited } from "@/lib/rate-limit";
+import { REGISTRATIONS_CLOSED } from "@/lib/event";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  if (REGISTRATIONS_CLOSED) {
+    return NextResponse.json(
+      { error: "registrations_closed", message: "As inscrições estão encerradas." },
+      { status: 403 },
+    );
+  }
+
   if (isRateLimited(clientIp(req))) {
     return NextResponse.json(
       { error: "rate_limited", message: "Muitas tentativas. Tente novamente em alguns minutos." },
